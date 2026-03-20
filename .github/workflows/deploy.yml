@@ -1,0 +1,92 @@
+name: Deploy
+
+on:
+  push:
+    branches: [dev, main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # dev 브랜치 → dev 환경 변수, main → prod 환경 변수 자동 참조
+    environment: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+      STAGE: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/${{ env.PROJECT_NAME }}-${{ env.STAGE }}-fe-github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          VITE_PROJECT_NAME: ${{ vars.PROJECT_NAME }}
+          VITE_BE_URL: ${{ vars.BE_URL }}
+        run: npm run build
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.PROJECT_NAME }}/${{ env.STAGE }}/fe/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ vars.PROJECT_NAME }}-tf-lock"
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="stage=${{ env.STAGE }}" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="domain=${{ vars.DOMAIN }}" \
+            -var="fe_subdomain=${{ vars.FE_SUBDOMAIN }}"
+
+      - name: Get Terraform outputs
+        id: tf
+        working-directory: terraform
+        run: |
+          echo "bucket=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+          echo "distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
+
+      - name: Deploy to S3
+        run: |
+          # index.html: 캐시 무효화 (항상 최신 버전)
+          aws s3 cp dist/index.html s3://${{ steps.tf.outputs.bucket }}/index.html \
+            --cache-control "no-cache,no-store,must-revalidate"
+
+          # 나머지 assets: 1년 캐시 (Vite가 content hash를 파일명에 포함)
+          aws s3 sync dist/ s3://${{ steps.tf.outputs.bucket }}/ \
+            --delete \
+            --exclude "index.html" \
+            --cache-control "public,max-age=31536000,immutable"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.tf.outputs.distribution_id }} \
+            --paths "/*"
