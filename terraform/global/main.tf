@@ -83,8 +83,7 @@ resource "aws_iam_role_policy" "github_actions" {
           "s3:*",
           "cloudfront:*",
           "route53:*",
-          "acm:DescribeCertificate",
-          "acm:ListCertificates"
+          "acm:*"
         ]
         Resource = "*"
       }
