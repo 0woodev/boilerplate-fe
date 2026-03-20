@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import './App.css'
 
-const PROJECT_NAME = import.meta.env.VITE_PROJECT_NAME || '{{PROJECT_NAME}}'
-const BE_URL = import.meta.env.VITE_BE_URL || 'https://{{BE_DOMAIN}}'
+const PROJECT_NAME = import.meta.env.VITE_PROJECT_NAME
+const BE_URL = import.meta.env.VITE_BE_URL
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 const HAS_BODY = ['POST', 'PUT', 'PATCH']
