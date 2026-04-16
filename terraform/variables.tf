@@ -18,7 +18,7 @@ variable "domain" {
   type        = string
 }
 
-variable "fe_subdomain" {
+variable "fe_domain" {
   description = "FE 서브도메인. ex) myapp.wooapps.net (https:// 없이)"
   type        = string
 }

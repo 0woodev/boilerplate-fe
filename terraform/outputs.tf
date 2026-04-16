@@ -10,5 +10,5 @@ output "cloudfront_distribution_id" {
 
 output "fe_url" {
   description = "FE URL"
-  value       = "https://${var.fe_subdomain}"
+  value       = "https://${var.fe_domain}"
 }
