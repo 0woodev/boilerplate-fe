@@ -59,12 +59,12 @@ jobs:
       - name: Terraform Apply
         working-directory: terraform
         run: |
-          terraform apply -auto-approve \
+          terraform apply -auto-approve -input=false \
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -var="stage=${{ env.STAGE }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="domain=${{ vars.DOMAIN }}" \
-            -var="fe_subdomain=${{ vars.FE_SUBDOMAIN }}"
+            -var="fe_domain=${{ vars.FE_DOMAIN }}"
 
       - name: Get Terraform outputs
         id: tf

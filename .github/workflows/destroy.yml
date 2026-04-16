@@ -89,4 +89,4 @@ jobs:
             -var="stage=${{ env.STAGE }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="domain=${{ vars.DOMAIN }}" \
-            -var="fe_subdomain=${{ vars.FE_SUBDOMAIN }}"
+            -var="fe_domain=${{ vars.FE_DOMAIN }}"

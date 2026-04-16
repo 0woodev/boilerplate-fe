@@ -83,7 +83,7 @@ resource "aws_cloudfront_origin_access_control" "fe" {
 resource "aws_cloudfront_distribution" "fe" {
   enabled             = true
   default_root_object = "index.html"
-  aliases             = [var.fe_subdomain]
+  aliases             = [var.fe_domain]
   price_class         = "PriceClass_200"
 
   origin {
@@ -167,7 +167,7 @@ resource "aws_s3_bucket_policy" "fe" {
 # ============================================================
 resource "aws_route53_record" "fe" {
   zone_id = data.aws_route53_zone.this.zone_id
-  name    = var.fe_subdomain
+  name    = var.fe_domain
   type    = "A"
 
   alias {
