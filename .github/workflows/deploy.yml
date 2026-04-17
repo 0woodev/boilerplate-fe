@@ -40,6 +40,8 @@ jobs:
         env:
           VITE_PROJECT_NAME: ${{ vars.PROJECT_NAME }}
           VITE_BE_URL: ${{ vars.BE_URL }}
+          VITE_WORKSPACE_ID: ${{ vars.WORKSPACE_ID }}
+          VITE_USE_MSW: ${{ env.STAGE == 'dev' && 'true' || 'false' }}
         run: npm run build
 
       - name: Setup Terraform
