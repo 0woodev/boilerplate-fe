@@ -2,15 +2,20 @@ interface AppEnv {
   BE_URL: string
   WORKSPACE_ID: string
   PROJECT_NAME: string
+  USE_MSW: boolean
 }
 
-function required(key: string, value: string | undefined): string {
-  if (!value) throw new Error(`Missing required env: ${key}`)
-  return value
+function orDefault(value: string | undefined, fallback: string): string {
+  return value && value.length > 0 ? value : fallback
 }
 
 export const env: AppEnv = {
-  BE_URL: required('VITE_BE_URL', import.meta.env.VITE_BE_URL),
-  WORKSPACE_ID: required('VITE_WORKSPACE_ID', import.meta.env.VITE_WORKSPACE_ID),
-  PROJECT_NAME: import.meta.env.VITE_PROJECT_NAME ?? 'hj-adlog',
+  // MSW mode does not make real requests, so a placeholder is fine
+  BE_URL: orDefault(import.meta.env.VITE_BE_URL, 'http://localhost:0'),
+  WORKSPACE_ID: orDefault(import.meta.env.VITE_WORKSPACE_ID, 'dev-workspace-01'),
+  PROJECT_NAME: orDefault(import.meta.env.VITE_PROJECT_NAME, 'my-app'),
+  // Explicit VITE_USE_MSW takes precedence; otherwise ON in dev mode
+  USE_MSW: import.meta.env.VITE_USE_MSW
+    ? import.meta.env.VITE_USE_MSW === 'true'
+    : import.meta.env.DEV,
 }
