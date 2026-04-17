@@ -40,6 +40,8 @@ jobs:
         env:
           VITE_PROJECT_NAME: ${{ vars.PROJECT_NAME }}
           VITE_BE_URL: ${{ vars.BE_URL }}
+          VITE_WORKSPACE_ID: ${{ vars.WORKSPACE_ID }}
+          VITE_USE_MSW: ${{ env.STAGE == 'dev' && 'true' || 'false' }}
         run: npm run build
 
       - name: Setup Terraform
@@ -59,12 +61,12 @@ jobs:
       - name: Terraform Apply
         working-directory: terraform
         run: |
-          terraform apply -auto-approve \
+          terraform apply -auto-approve -input=false \
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -var="stage=${{ env.STAGE }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="domain=${{ vars.DOMAIN }}" \
-            -var="fe_subdomain=${{ vars.FE_SUBDOMAIN }}"
+            -var="fe_domain=${{ vars.FE_DOMAIN }}"
 
       - name: Get Terraform outputs
         id: tf

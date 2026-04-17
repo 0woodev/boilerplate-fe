@@ -1,8 +1,52 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #0f1117;
-  color: #e2e8f0;
-  min-height: 100vh;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --muted: 30 10% 97%;
+    --muted-foreground: 220 9% 46%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --border: 30 12% 91%;
+    --input: 30 12% 91%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 10% 97%;
+    --secondary-foreground: 240 10% 3.9%;
+
+    --accent: 30 10% 94%;
+    --accent-foreground: 240 10% 3.9%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 221 83% 53%;
+
+    --metric-blue-bg: 214 100% 97%;
+    --metric-blue-fg: 221 83% 53%;
+    --metric-green-bg: 138 76% 97%;
+    --metric-green-fg: 142 71% 45%;
+    --metric-amber-bg: 55 92% 95%;
+    --metric-amber-fg: 45 93% 39%;
+    --metric-purple-bg: 270 100% 98%;
+    --metric-purple-fg: 262 83% 58%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans antialiased; }
 }
