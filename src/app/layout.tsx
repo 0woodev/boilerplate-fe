@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Home, LogOut, Menu } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Home, LogOut, Menu, ScrollText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -29,6 +29,19 @@ export function AppLayout() {
       >
         <Home className="h-4 w-4 shrink-0" />
         <span>Home</span>
+      </NavLink>
+      <NavLink
+        to="/patch-notes"
+        onClick={() => setMobileOpen(false)}
+        className={({ isActive }) =>
+          cn(
+            'flex items-center gap-2 px-2 py-1.5 rounded text-sm',
+            isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
+          )
+        }
+      >
+        <ScrollText className="h-4 w-4 shrink-0" />
+        <span>Patch Notes</span>
       </NavLink>
       {/* TODO: add nav items */}
     </>
@@ -71,6 +84,18 @@ export function AppLayout() {
           >
             <Home className="h-4 w-4 shrink-0" />
             {!collapsed && <span>Home</span>}
+          </NavLink>
+          <NavLink
+            to="/patch-notes"
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-2 px-2 py-1.5 rounded text-sm',
+                isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent',
+              )
+            }
+          >
+            <ScrollText className="h-4 w-4 shrink-0" />
+            {!collapsed && <span>Patch Notes</span>}
           </NavLink>
           {/* TODO: add nav items */}
         </nav>
