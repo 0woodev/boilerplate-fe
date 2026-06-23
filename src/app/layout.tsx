@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useState } from 'react'
-import { ChevronLeft, ChevronRight, Home, Menu, Settings } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileText, Home, Menu, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -8,6 +8,7 @@ import { env } from '@/lib/env'
 
 const NAV_ITEMS = [
   { to: '/home', label: 'Home', icon: Home },
+  { to: '/patch-notes', label: 'Patch Notes', icon: FileText },
   // 도메인별 항목 추가
 ]
 
