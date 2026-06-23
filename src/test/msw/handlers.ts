@@ -41,7 +41,8 @@ export const handlers = [
       date: string
       scope: PatchNote['scope']
       title: string
-      body?: string
+      user_body?: string
+      dev_body?: string
     }
     const now = new Date().toISOString()
     const note: PatchNote = {
@@ -49,7 +50,8 @@ export const handlers = [
       date: body.date,
       scope: body.scope,
       title: body.title,
-      body: body.body ?? '',
+      user_body: body.user_body ?? '',
+      dev_body: body.dev_body ?? '',
       source: 'manual',
       created_at: now,
       updated_at: now,
@@ -61,9 +63,14 @@ export const handlers = [
     const { id } = params
     const note = patchNotes.find(n => n.patch_note_id === id)
     if (!note) return new HttpResponse(null, { status: 404 })
-    const body = (await request.json()) as { title?: string; body?: string }
+    const body = (await request.json()) as {
+      title?: string
+      user_body?: string
+      dev_body?: string
+    }
     if (body.title !== undefined) note.title = body.title
-    if (body.body !== undefined) note.body = body.body
+    if (body.user_body !== undefined) note.user_body = body.user_body
+    if (body.dev_body !== undefined) note.dev_body = body.dev_body
     note.updated_at = new Date().toISOString()
     return HttpResponse.json(note)
   }),

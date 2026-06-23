@@ -9,7 +9,8 @@ export interface PatchNote {
   date: string // YYYY-MM-DD
   scope: PatchNoteScope
   title: string
-  body: string // markdown, may be ""
+  user_body: string // markdown, may be ""
+  dev_body: string // markdown, may be ""
   source: PatchNoteSource
   created_at: string
   updated_at: string
@@ -19,13 +20,15 @@ export interface CreatePatchNoteInput {
   date: string
   scope: PatchNoteScope
   title: string
-  body?: string
+  user_body?: string
+  dev_body?: string
 }
 
 export interface UpdatePatchNoteInput {
   id: string
   title?: string
-  body?: string
+  user_body?: string
+  dev_body?: string
 }
 
 const PATCH_NOTES_KEY = ['patch-notes'] as const

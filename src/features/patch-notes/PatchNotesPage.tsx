@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import {
@@ -54,18 +55,20 @@ function todayIso(): string {
 interface EditState {
   id: string
   title: string
-  body: string
+  user_body: string
+  dev_body: string
 }
 
 interface CreateState {
   date: string
   scope: PatchNoteScope
   title: string
-  body: string
+  user_body: string
+  dev_body: string
 }
 
 function emptyCreateState(): CreateState {
-  return { date: todayIso(), scope: 'fe', title: '', body: '' }
+  return { date: todayIso(), scope: 'fe', title: '', user_body: '', dev_body: '' }
 }
 
 export function PatchNotesPage() {
@@ -77,16 +80,27 @@ export function PatchNotesPage() {
   const [editState, setEditState] = useState<EditState | null>(null)
   const [createState, setCreateState] = useState<CreateState | null>(null)
 
-  // Group notes by date (already date-desc from the API).
+  const [searchParams] = useSearchParams()
+  const dev = searchParams.get('dev') === 'true'
+  const audience = dev ? 'dev' : 'user'
+
+  const activeBody = (note: PatchNote) =>
+    audience === 'dev' ? note.dev_body : note.user_body
+
+  // Group notes by date (already date-desc from the API). Notes whose active
+  // body (per audience) is empty are hidden; date groups that end up empty are
+  // dropped too.
   const groups = useMemo(() => {
     const map = new Map<string, PatchNote[]>()
     for (const note of data ?? []) {
+      const body = audience === 'dev' ? note.dev_body : note.user_body
+      if (body.trim() === '') continue
       const list = map.get(note.date) ?? []
       list.push(note)
       map.set(note.date, list)
     }
     return [...map.entries()]
-  }, [data])
+  }, [data, audience])
 
   function reportError(err: unknown, title: string) {
     const description =
@@ -101,7 +115,8 @@ export function PatchNotesPage() {
         date: createState.date,
         scope: createState.scope,
         title: createState.title,
-        body: createState.body || undefined,
+        user_body: createState.user_body || undefined,
+        dev_body: createState.dev_body || undefined,
       })
       setCreateState(null)
     } catch (err) {
@@ -115,7 +130,8 @@ export function PatchNotesPage() {
       await updateMutation.mutateAsync({
         id: editState.id,
         title: editState.title,
-        body: editState.body,
+        user_body: editState.user_body,
+        dev_body: editState.dev_body,
       })
       setEditState(null)
     } catch (err) {
@@ -135,8 +151,17 @@ export function PatchNotesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Patch Notes</h1>
-          <p className="text-sm text-muted-foreground">변경 이력 타임라인</p>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight">Patch Notes</h1>
+            {dev && (
+              <span className="inline-flex items-center rounded bg-slate-900 px-2 py-0.5 text-xs font-medium text-slate-50">
+                개발자용
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {dev ? '개발자용 변경 이력 타임라인' : '변경 이력 타임라인'}
+          </p>
         </div>
         <Button onClick={() => setCreateState(emptyCreateState())}>
           <Plus className="h-4 w-4" />새 노트
@@ -173,7 +198,8 @@ export function PatchNotesPage() {
                           setEditState({
                             id: note.patch_note_id,
                             title: note.title,
-                            body: note.body,
+                            user_body: note.user_body,
+                            dev_body: note.dev_body,
                           })
                         }
                       >
@@ -190,10 +216,10 @@ export function PatchNotesPage() {
                       </Button>
                     </div>
                   </CardHeader>
-                  {note.body && (
+                  {activeBody(note).trim() !== '' && (
                     <CardContent>
                       <div className="prose prose-sm max-w-none text-sm">
-                        <ReactMarkdown>{note.body}</ReactMarkdown>
+                        <ReactMarkdown>{activeBody(note)}</ReactMarkdown>
                       </div>
                     </CardContent>
                   )}
@@ -226,13 +252,24 @@ export function PatchNotesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-body">본문 (Markdown)</Label>
+                <Label htmlFor="edit-user-body">사용자용 본문 (Markdown)</Label>
                 <textarea
-                  id="edit-body"
+                  id="edit-user-body"
                   className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={editState.body}
+                  value={editState.user_body}
                   onChange={e =>
-                    setEditState({ ...editState, body: e.target.value })
+                    setEditState({ ...editState, user_body: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-dev-body">개발자용 본문 (Markdown)</Label>
+                <textarea
+                  id="edit-dev-body"
+                  className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={editState.dev_body}
+                  onChange={e =>
+                    setEditState({ ...editState, dev_body: e.target.value })
                   }
                 />
               </div>
@@ -308,13 +345,24 @@ export function PatchNotesPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="create-body">본문 (Markdown)</Label>
+                <Label htmlFor="create-user-body">사용자용 본문 (Markdown)</Label>
                 <textarea
-                  id="create-body"
+                  id="create-user-body"
                   className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  value={createState.body}
+                  value={createState.user_body}
                   onChange={e =>
-                    setCreateState({ ...createState, body: e.target.value })
+                    setCreateState({ ...createState, user_body: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="create-dev-body">개발자용 본문 (Markdown)</Label>
+                <textarea
+                  id="create-dev-body"
+                  className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  value={createState.dev_body}
+                  onChange={e =>
+                    setCreateState({ ...createState, dev_body: e.target.value })
                   }
                 />
               </div>

@@ -42,7 +42,8 @@ describe('usePatchNotes (MSW-mocked)', () => {
       date: '2026-06-25',
       scope: 'docs',
       title: '새 문서 추가',
-      body: 'hello',
+      user_body: 'hello',
+      dev_body: 'dev hello',
     })
 
     await waitFor(() =>
@@ -53,7 +54,7 @@ describe('usePatchNotes (MSW-mocked)', () => {
     expect(list.result.current.data![0].date).toBe('2026-06-25')
   })
 
-  it('useUpdatePatchNote edits title and body in the refetched list', async () => {
+  it('useUpdatePatchNote edits title and both bodies in the refetched list', async () => {
     const Wrapper = wrapper()
     const list = renderHook(() => usePatchNotes(), { wrapper: Wrapper })
     const update = renderHook(() => useUpdatePatchNote(), { wrapper: Wrapper })
@@ -63,13 +64,15 @@ describe('usePatchNotes (MSW-mocked)', () => {
     await update.result.current.mutateAsync({
       id: 'pn-001',
       title: '수정된 제목',
-      body: '수정된 본문',
+      user_body: '수정된 사용자 본문',
+      dev_body: '수정된 개발자 본문',
     })
 
     await waitFor(() => {
       const note = list.result.current.data!.find(n => n.patch_note_id === 'pn-001')
       expect(note?.title).toBe('수정된 제목')
-      expect(note?.body).toBe('수정된 본문')
+      expect(note?.user_body).toBe('수정된 사용자 본문')
+      expect(note?.dev_body).toBe('수정된 개발자 본문')
     })
   })
 
