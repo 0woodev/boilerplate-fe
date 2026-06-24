@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { env } from '@/lib/env'
 import { api } from '@/lib/api'
+import { PatchNotesPage } from '@/features/patch-notes/PatchNotesPage'
 
 interface HealthResponse {
   status: string
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/home" replace /> },
       { path: 'home', element: <HomePage /> },
+      { path: 'patch-notes', element: <PatchNotesPage /> },
       { path: 'settings', element: <h1 className="text-2xl font-semibold">Settings (TODO)</h1> },
     ],
   },
